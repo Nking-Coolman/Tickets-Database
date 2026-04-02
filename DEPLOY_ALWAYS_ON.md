@@ -1,27 +1,22 @@
-Public Static Ticket Portal Deployment
-Generated: 2026-04-02
+Always-On Ticket Portal Deployment
+Generated: 2026-03-05
 
 Included files:
 - index.html
-- tickets-data.json
-- ticket-preview-*.png (1607 files)
-- _deploy/object-storage/*
-- _deploy/self-hosted/*
+- review_pages/*.png (291 files)
 
-Recommended long-term hosting for a growing archive:
-1. Object storage + CDN/custom domain (Cloudflare R2, Backblaze B2, S3-compatible storage)
-2. Your own small web server or VM with Caddy/Nginx
-3. Any static host only if its storage and bandwidth limits fit your archive
+Fastest always-on option (no API): Netlify Drop
+1. Open https://app.netlify.com/drop
+2. Drag this whole folder onto the page
+3. Netlify gives you a live URL immediately
 
-Important:
-- This bundle is host-neutral. You can move it between hosts without changing code.
-- Free-tier website products often have hard limits. For larger growth, prefer storage + CDN or your own server.
-- Host the bundle at the site root so /tickets-data.json and /ticket-preview-*.png work unchanged.
-- Generated publish helpers are under _deploy/ for both scalable hosting tracks.
+Alternative: Cloudflare Pages
+1. Create a Pages project from uploaded static files
+2. Upload this folder as the site content
 
 After you get the final public URL:
 Run this command to set URL + regenerate QR:
   .venv\Scripts\python.exe DataAnalysisExpert\build_always_on_site_bundle.py --public-url "<YOUR_PUBLIC_URL>" --skip-bundle
 
 Current portal_public_url in settings:
-https://nking-coolman.github.io/Tickets-Database/
+(not set)
