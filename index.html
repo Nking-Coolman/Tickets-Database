@@ -832,12 +832,39 @@ body .ticket-portal .status {
 		return parts.join('');
 	}
 
+	function uniqueValues(records, selector) {
+		return Array.from(new Set(
+			records
+				.map((record) => text(selector(record)))
+				.filter(Boolean)
+		));
+	}
+
+	function inferPdfSearchLabel(records, queryText) {
+		const explicitQuery = text(queryText);
+		if (explicitQuery) {
+			return explicitQuery;
+		}
+
+		const customers = uniqueValues(records, (record) => record.customer).filter((value) => value.toLowerCase() !== 'unknown');
+		if (customers.length === 1) {
+			return customers[0];
+		}
+
+		const accounts = uniqueValues(records, (record) => record.account);
+		if (accounts.length === 1) {
+			return 'account ' + accounts[0];
+		}
+
+		return 'date-filtered-results';
+	}
+
 	function sanitizeFilenamePart(value) {
 		const cleaned = text(value)
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/^-+|-+$/g, '')
-			.slice(0, 48);
+			.slice(0, 24);
 		return cleaned || 'ticket-search';
 	}
 
@@ -849,7 +876,8 @@ body .ticket-portal .status {
 		const dateFragment = datedRecords.length
 			? datedRecords[0].replace(/-/g, '') + (datedRecords[datedRecords.length - 1] !== datedRecords[0] ? '_to_' + datedRecords[datedRecords.length - 1].replace(/-/g, '') : '')
 			: currentTimestampStamp();
-		const searchFragment = sanitizeFilenamePart(queryText);
+		const inferredLabel = inferPdfSearchLabel(records, queryText);
+		const searchFragment = sanitizeFilenamePart(inferredLabel);
 		return 'coolman-ticket-search-' + searchFragment + '-' + dateFragment + '.pdf';
 	}
 
