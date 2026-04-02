@@ -1,0 +1,15 @@
+{$SITE_ADDRESS} {
+    root * /srv/site
+    encode zstd gzip
+
+    @index path / /index.html
+    header @index Cache-Control "no-cache, no-store, must-revalidate"
+
+    @data path /tickets-data.json
+    header @data Cache-Control "no-cache, must-revalidate"
+
+    @previews path_regexp preview ^/ticket-preview-.*\.png$
+    header @previews Cache-Control "public, max-age=604800, immutable"
+
+    file_server
+}

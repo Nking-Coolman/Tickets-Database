@@ -1,0 +1,18 @@
+services:
+  tickets-site:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    ports:
+      - "${SITE_HTTP_PORT:-80}:80"
+      - "${SITE_HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ../../:/srv/site:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

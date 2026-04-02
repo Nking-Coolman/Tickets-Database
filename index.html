@@ -377,6 +377,7 @@ body .ticket-portal .status {
       </select>
       <button id="applyBtn" type="button">Search</button>
       <button id="printAllBtn" type="button">Print All</button>
+      <button id="savePdfBtn" type="button">Save PDF</button>
       <button id="clearBtn" class="alt" type="button">Clear</button>
     </section>
 
@@ -399,8 +400,10 @@ body .ticket-portal .status {
 	const WEBAPI_ENABLED_SETTING = 'Webapi/' + TABLE_NAME + '/enabled';
 	const WEBAPI_FIELDS_SETTING = 'Webapi/' + TABLE_NAME + '/fields';
 	const PRINT_WINDOW_TITLE = 'Coolman Fuels Ticket Print Batch';
+	const PDF_LIBRARY_URL = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
 	let customerGroups = [];
 	let searchInfoEl = null;
+	let pdfLibPromise = null;
 
 	function text(value) {
 		return (value || '').toString().trim();
@@ -707,6 +710,184 @@ body .ticket-portal .status {
 		return records.filter((record) => record.preview_url || record.page_url);
 	}
 
+	function imageUrlForPdf(record) {
+		return text(record.preview_url) || text(record.page_url);
+	}
+
+	function loadExternalScript(url) {
+		return new Promise((resolve, reject) => {
+			const existing = document.querySelector('script[data-ticket-pdf-lib="true"]');
+			if (existing) {
+				existing.addEventListener('load', resolve, { once: true });
+				existing.addEventListener('error', () => reject(new Error('Failed to load PDF library.')), { once: true });
+				return;
+			}
+
+			const script = document.createElement('script');
+			script.src = url;
+			script.async = true;
+			script.dataset.ticketPdfLib = 'true';
+			script.addEventListener('load', resolve, { once: true });
+			script.addEventListener('error', () => reject(new Error('Failed to load PDF library.')), { once: true });
+			document.head.appendChild(script);
+		});
+	}
+
+	function ensurePdfLib() {
+		if (window.jspdf && window.jspdf.jsPDF) {
+			return Promise.resolve(window.jspdf.jsPDF);
+		}
+		if (!pdfLibPromise) {
+			pdfLibPromise = loadExternalScript(PDF_LIBRARY_URL)
+				.then(() => {
+					if (!window.jspdf || !window.jspdf.jsPDF) {
+						throw new Error('PDF library loaded but jsPDF is unavailable.');
+					}
+					return window.jspdf.jsPDF;
+				})
+				.catch((error) => {
+					pdfLibPromise = null;
+					throw error;
+				});
+		}
+		return pdfLibPromise;
+	}
+
+	function blobToDataUrl(blob) {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result);
+			reader.onerror = () => reject(new Error('Could not read ticket image for PDF export.'));
+			reader.readAsDataURL(blob);
+		});
+	}
+
+	function getImageDimensions(src) {
+		return new Promise((resolve, reject) => {
+			const image = new Image();
+			image.onload = () => resolve({
+				width: image.naturalWidth || image.width,
+				height: image.naturalHeight || image.height
+			});
+			image.onerror = () => reject(new Error('Could not decode ticket image for PDF export.'));
+			image.src = src;
+		});
+	}
+
+	function detectPdfImageFormat(blob, dataUrl) {
+		const mimeType = text(blob && blob.type).toLowerCase();
+		if (mimeType.indexOf('jpeg') !== -1 || mimeType.indexOf('jpg') !== -1) {
+			return 'JPEG';
+		}
+		if (mimeType.indexOf('webp') !== -1) {
+			return 'WEBP';
+		}
+		if (mimeType.indexOf('png') !== -1) {
+			return 'PNG';
+		}
+		if (/^data:image\/jpeg/i.test(text(dataUrl))) {
+			return 'JPEG';
+		}
+		if (/^data:image\/webp/i.test(text(dataUrl))) {
+			return 'WEBP';
+		}
+		return 'PNG';
+	}
+
+	async function fetchPdfImage(record) {
+		const imageUrl = imageUrlForPdf(record);
+		if (!imageUrl) {
+			throw new Error('This ticket does not have a preview image.');
+		}
+
+		const response = await fetch(imageUrl, {
+			headers: { Accept: 'image/*' },
+			credentials: 'same-origin',
+			cache: 'no-store'
+		});
+		if (!response.ok) {
+			throw new Error('Ticket image request failed: ' + response.status);
+		}
+
+		const blob = await response.blob();
+		const dataUrl = await blobToDataUrl(blob);
+		const dimensions = await getImageDimensions(dataUrl);
+		return {
+			dataUrl,
+			format: detectPdfImageFormat(blob, dataUrl),
+			width: dimensions.width,
+			height: dimensions.height
+		};
+	}
+
+	function currentTimestampStamp() {
+		const now = new Date();
+		const parts = [
+			now.getFullYear(),
+			String(now.getMonth() + 1).padStart(2, '0'),
+			String(now.getDate()).padStart(2, '0'),
+			String(now.getHours()).padStart(2, '0'),
+			String(now.getMinutes()).padStart(2, '0')
+		];
+		return parts.join('');
+	}
+
+	function buildPdfFilename(records) {
+		const datedRecords = records
+			.map((record) => text(record.filename_date || record.search_date).replace(/[^0-9-]/g, ''))
+			.filter(Boolean)
+			.sort();
+		const dateFragment = datedRecords.length
+			? datedRecords[0].replace(/-/g, '') + (datedRecords[datedRecords.length - 1] !== datedRecords[0] ? '_to_' + datedRecords[datedRecords.length - 1].replace(/-/g, '') : '')
+			: currentTimestampStamp();
+		return 'coolman-ticket-search-' + dateFragment + '.pdf';
+	}
+
+	async function downloadBatchPdf(records, onProgress) {
+		const pages = printableRecords(records);
+		if (!pages.length) {
+			throw new Error('No ticket preview images are available for this search.');
+		}
+
+		const jsPDF = await ensurePdfLib();
+		let pdf = null;
+		let savedCount = 0;
+		const failures = [];
+
+		for (let index = 0; index < pages.length; index += 1) {
+			const record = pages[index];
+			if (typeof onProgress === 'function') {
+				onProgress(index + 1, pages.length, record);
+			}
+
+			try {
+				const image = await fetchPdfImage(record);
+				const orientation = image.width > image.height ? 'landscape' : 'portrait';
+				if (!pdf) {
+					pdf = new jsPDF({
+						orientation,
+						unit: 'px',
+						format: [image.width, image.height],
+						compress: true
+					});
+				} else {
+					pdf.addPage([image.width, image.height], orientation);
+				}
+				pdf.addImage(image.dataUrl, image.format, 0, 0, image.width, image.height, undefined, 'FAST');
+				savedCount += 1;
+			} catch (error) {
+				failures.push({ record, error });
+			}
+		}
+
+		if (!pdf || !savedCount) {
+			throw new Error('No ticket preview images could be added to the PDF.');
+		}
+
+		pdf.save(buildPdfFilename(pages));
+		return { savedCount, failures };
+	}
+
 	function printBatch(records) {
 		const pages = printableRecords(records);
 		if (!pages.length) {
@@ -770,9 +951,10 @@ body .ticket-portal .status {
 		const sortEl = document.getElementById('sortBy');
 		const applyBtn = document.getElementById('applyBtn');
 		const printAllBtn = document.getElementById('printAllBtn');
+		const savePdfBtn = document.getElementById('savePdfBtn');
 		const clearBtn = document.getElementById('clearBtn');
 
-		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !printAllBtn || !clearBtn) {
+		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
 			return;
 		}
 
@@ -809,7 +991,9 @@ body .ticket-portal .status {
 					|| (parseInt(text(a.page), 10) || 0) - (parseInt(text(b.page), 10) || 0);
 			});
 			lastFiltered = filtered;
-			printAllBtn.disabled = printableRecords(filtered).length === 0;
+			const hasPrintableRecords = printableRecords(filtered).length > 0;
+			printAllBtn.disabled = !hasPrintableRecords;
+			savePdfBtn.disabled = !hasPrintableRecords;
 			const uniqueAccounts = new Set(filtered.map((record) => text(record.account)).filter(Boolean));
 			countEl.textContent = filtered.length + ' result' + (filtered.length === 1 ? '' : 's') + (filtered.length ? ' across ' + uniqueAccounts.size + ' account' + (uniqueAccounts.size === 1 ? '' : 's') : '');
 			updateSearchInfo(searchContext, filtered);
@@ -855,6 +1039,29 @@ body .ticket-portal .status {
 
 		applyBtn.addEventListener('click', render);
 		printAllBtn.addEventListener('click', () => printBatch(lastFiltered));
+		savePdfBtn.addEventListener('click', async () => {
+			const defaultStateText = stateEl.textContent;
+			const defaultButtonText = savePdfBtn.textContent;
+			savePdfBtn.disabled = true;
+			savePdfBtn.textContent = 'Saving PDF...';
+
+			try {
+				const result = await downloadBatchPdf(lastFiltered, (current, total, record) => {
+					stateEl.textContent = 'Generating PDF: ' + current + ' of ' + total + ' | ' + (text(record.account) || text(record.customer) || 'ticket image');
+				});
+				stateEl.textContent = defaultStateText;
+				if (result.failures.length) {
+					window.alert('PDF saved with ' + result.savedCount + ' page' + (result.savedCount === 1 ? '' : 's') + '. Skipped ' + result.failures.length + ' ticket image' + (result.failures.length === 1 ? '' : 's') + ' that could not be loaded.');
+				}
+			} catch (error) {
+				console.error(error);
+				stateEl.textContent = defaultStateText;
+				window.alert('Could not save the current search as a PDF: ' + explainError(error));
+			} finally {
+				savePdfBtn.textContent = defaultButtonText;
+				savePdfBtn.disabled = printableRecords(lastFiltered).length === 0;
+			}
+		});
 		clearBtn.addEventListener('click', () => {
 			qEl.value = '';
 			fromEl.value = '';
