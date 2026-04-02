@@ -7,21 +7,21 @@
   <!-- Public static ticket portal assembled from the live Power Pages assets. -->
   <style>
 body .ticket-portal {
-	--cf-paper: #ffffff;
-	--cf-ink: #2f2f2f;
-	--cf-muted: #6b6b6b;
-	--cf-border: #d9d9d9;
-	--cf-panel: #fbfbfb;
-	--cf-shadow: rgba(34, 34, 34, 0.08);
+	--cf-paper: #111111;
+	--cf-ink: #f3f3f3;
+	--cf-muted: #b8b8b8;
+	--cf-border: #2c2c2c;
+	--cf-panel: #181818;
+	--cf-shadow: rgba(0, 0, 0, 0.35);
 	--cf-brand: #e41d2d;
 	--cf-brand-deep: #c32f21;
 	--cf-brand-warm: #f26554;
-	--cf-brand-soft: #fff0ee;
+	--cf-brand-soft: #351717;
 	--cf-accent: #01547e;
 	margin: 0;
 	background:
-		linear-gradient(180deg, rgba(228, 29, 45, 0.06), rgba(228, 29, 45, 0) 220px),
-		linear-gradient(135deg, #faf9f9 0%, #f4f4f4 100%);
+		linear-gradient(180deg, rgba(228, 29, 45, 0.14), rgba(228, 29, 45, 0) 260px),
+		linear-gradient(135deg, #050505 0%, #121212 55%, #1a1a1a 100%);
 	color: var(--cf-ink);
 	font-family: "Segoe UI", Tahoma, sans-serif;
 }
@@ -131,7 +131,7 @@ body .ticket-portal .hero-contact {
 
 body .ticket-portal .controls {
 	margin-top: 14px;
-	background: rgba(255, 255, 255, 0.96);
+	background: rgba(17, 17, 17, 0.96);
 	border: 1px solid var(--cf-border);
 	border-radius: 14px;
 	padding: 14px;
@@ -149,7 +149,7 @@ body .ticket-portal .controls select {
 	border: 1px solid #cfcfcf;
 	font-size: 14px;
 	padding: 8px 10px;
-	background: #fff;
+	background: #151515;
 	color: var(--cf-ink);
 }
 
@@ -157,6 +157,10 @@ body .ticket-portal .controls input:focus,
 body .ticket-portal .controls select:focus {
 	outline: 2px solid rgba(1, 84, 126, 0.18);
 	border-color: var(--cf-accent);
+}
+
+body .ticket-portal .controls input::placeholder {
+	color: #9c9c9c;
 }
 
 body .ticket-portal .controls button {
@@ -169,9 +173,9 @@ body .ticket-portal .controls button {
 }
 
 body .ticket-portal .controls button.alt {
-	background: #fff;
-	color: var(--cf-brand-deep);
-	border-color: #e1b6b1;
+	background: #1a1a1a;
+	color: #f7c8c3;
+	border-color: #6f3530;
 	box-shadow: none;
 }
 
@@ -216,7 +220,7 @@ body .ticket-portal .card {
 }
 
 body .ticket-portal .preview {
-	background: linear-gradient(180deg, #f7f7f7, #efefef);
+	background: linear-gradient(180deg, #1d1d1d, #141414);
 	border-right: 1px solid var(--cf-border);
 	min-height: 280px;
 	display: flex;
@@ -233,7 +237,7 @@ body .ticket-portal .preview img {
 
 body .ticket-portal .noimg {
 	font-size: 13px;
-	color: #7a7a7a;
+	color: #a0a0a0;
 	padding: 12px;
 	text-align: center;
 }
@@ -244,7 +248,7 @@ body .ticket-portal .info {
 	gap: 6px;
 	align-content: start;
 	background:
-		linear-gradient(180deg, rgba(242, 101, 84, 0.04), rgba(242, 101, 84, 0) 70%),
+		linear-gradient(180deg, rgba(242, 101, 84, 0.08), rgba(242, 101, 84, 0) 70%),
 		var(--cf-paper);
 }
 
@@ -279,13 +283,13 @@ body .ticket-portal .actions a {
 	border-radius: 8px;
 	border: 1px solid var(--cf-border);
 	color: var(--cf-ink);
-	background: #fff;
+	background: #171717;
 }
 
 body .ticket-portal .actions a.primary {
 	background: var(--cf-brand-soft);
-	color: var(--cf-brand-deep);
-	border-color: #efc0bb;
+	color: #ffd9d5;
+	border-color: #7d3430;
 }
 
 body .ticket-portal .status {
