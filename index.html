@@ -240,7 +240,7 @@ body .ticket-portal .status {
 (() => {
 	const TABLE_NAME = 'cr775_ticketrecord';
 	const ENTITY_SET = 'cr775_ticketrecords';
-	const STATIC_DATA_URL = '/tickets-data.json';
+	const STATIC_DATA_URL = resolveStaticPath('/tickets-data.json');
 	const PAGE_SIZE = 5000;
 	const SELECT_COLUMNS = 'cr775_recordidentifier,cr775_externalkey,cr775_accountnumber,cr775_customername,cr775_ticketreference,cr775_sourcefile,cr775_pagenumber,cr775_filedate,cr775_deliverydate,cr775_filenamedate,cr775_searchdate,cr775_litresdelivered,cr775_fueltype,cr775_deliveryaddress,cr775_pdfurl,cr775_pageurl,cr775_previewurl';
 	const WEBAPI_ENABLED_SETTING = 'Webapi/' + TABLE_NAME + '/enabled';
@@ -251,6 +251,37 @@ body .ticket-portal .status {
 
 	function text(value) {
 		return (value || '').toString().trim();
+	}
+
+	function isGithubPagesHost() {
+		return /github\.io$/i.test(window.location.hostname || '');
+	}
+
+	function currentPathPrefix() {
+		const pathname = text(window.location.pathname);
+		if (!pathname) {
+			return '/';
+		}
+		return pathname.endsWith('/')
+			? pathname
+			: pathname.slice(0, pathname.lastIndexOf('/') + 1) || '/';
+	}
+
+	function resolveStaticPath(path) {
+		const raw = text(path);
+		if (!raw) {
+			return '';
+		}
+		if (/^[a-z]+:/i.test(raw) || raw.startsWith('//')) {
+			return raw;
+		}
+		if (!raw.startsWith('/')) {
+			return raw;
+		}
+		if (isGithubPagesHost()) {
+			return currentPathPrefix() + raw.replace(/^\//, '');
+		}
+		return raw;
 	}
 
 	function digitsOnly(value) {
@@ -369,8 +400,8 @@ body .ticket-portal .status {
 			fuel_type: text(row.cr775_fueltype),
 			delivery_address: text(row.cr775_deliveryaddress),
 			pdf_url: text(row.cr775_pdfurl),
-			page_url: text(row.cr775_pageurl),
-			preview_url: text(row.cr775_previewurl)
+			page_url: resolveStaticPath(row.cr775_pageurl),
+			preview_url: resolveStaticPath(row.cr775_previewurl)
 		};
 	}
 
@@ -472,8 +503,8 @@ body .ticket-portal .status {
 			fuel_type: text(row.fuel_type),
 			delivery_address: text(row.delivery_address),
 			pdf_url: text(row.pdf_url),
-			page_url: text(row.page_url),
-			preview_url: text(row.preview_url)
+			page_url: resolveStaticPath(row.page_url),
+			preview_url: resolveStaticPath(row.preview_url)
 		}));
 	}
 
