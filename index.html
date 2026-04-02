@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coolman Ticket Lookup</title>
+  <!-- Public static ticket portal assembled from the live Power Pages assets. -->
+  <style>
+body .ticket-portal {
+	margin: 0;
+	background: radial-gradient(circle at 15% 0%, #e6eef8 0%, #f2f5f9 45%);
+	color: #17212b;
+	font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+body .ticket-portal * {
+	box-sizing: border-box;
+}
+
+body .ticket-portal main {
+	max-width: 1380px;
+	margin: 0 auto;
+	padding: 18px;
+}
+
+body .ticket-portal header {
+	background: linear-gradient(135deg, #123b63, #205a93);
+	color: #fff;
+	border-radius: 14px;
+	padding: 18px;
+	box-shadow: 0 8px 24px rgba(18, 59, 99, 0.25);
+}
+
+body .ticket-portal header h1 {
+	margin: 0;
+	font-size: 28px;
+}
+
+body .ticket-portal header p {
+	margin: 6px 0 0;
+	opacity: 0.95;
+}
+
+body .ticket-portal .controls {
+	margin-top: 14px;
+	background: #ffffff;
+	border: 1px solid #d9e2ec;
+	border-radius: 12px;
+	padding: 12px;
+	display: grid;
+	grid-template-columns: 1.2fr 0.8fr 0.8fr 0.9fr auto auto auto;
+	gap: 8px;
+}
+
+body .ticket-portal .controls input,
+body .ticket-portal .controls button,
+body .ticket-portal .controls select {
+	min-height: 40px;
+	border-radius: 8px;
+	border: 1px solid #c7d4e2;
+	font-size: 14px;
+	padding: 8px 10px;
+}
+
+body .ticket-portal .controls button {
+	background: #0f4c81;
+	color: #fff;
+	border-color: #0f4c81;
+	cursor: pointer;
+}
+
+body .ticket-portal .controls button.alt {
+	background: #fff;
+	color: #0f4c81;
+}
+
+body .ticket-portal .controls button:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+body .ticket-portal .meta {
+	margin: 10px 2px 12px;
+	color: #55667a;
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+body .ticket-portal #searchInfo {
+	flex-basis: 100%;
+	font-size: 13px;
+	color: #36516e;
+}
+
+body .ticket-portal .grid {
+	display: grid;
+	grid-template-columns: 1.2fr 1fr;
+	gap: 12px;
+}
+
+body .ticket-portal .card {
+	background: #ffffff;
+	border: 1px solid #d9e2ec;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: 0 4px 16px rgba(34, 67, 104, 0.06);
+	display: grid;
+	grid-template-columns: 1.1fr 1fr;
+}
+
+body .ticket-portal .preview {
+	background: #edf3f9;
+	border-right: 1px solid #d9e2ec;
+	min-height: 280px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+body .ticket-portal .preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+body .ticket-portal .noimg {
+	font-size: 13px;
+	color: #7f8fa3;
+	padding: 12px;
+	text-align: center;
+}
+
+body .ticket-portal .info {
+	padding: 12px;
+	display: grid;
+	gap: 6px;
+	align-content: start;
+}
+
+body .ticket-portal .k {
+	color: #55667a;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+body .ticket-portal .v {
+	font-size: 14px;
+}
+
+body .ticket-portal .row {
+	display: grid;
+	gap: 2px;
+}
+
+body .ticket-portal .actions {
+	margin-top: 6px;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+body .ticket-portal .actions a {
+	text-decoration: none;
+	font-size: 13px;
+	padding: 8px 10px;
+	border-radius: 8px;
+	border: 1px solid #d9e2ec;
+	color: #17212b;
+	background: #fff;
+}
+
+body .ticket-portal .actions a.primary {
+	background: #e8f1fb;
+	color: #0f4c81;
+	border-color: #b4c8dd;
+}
+
+body .ticket-portal .status {
+	color: #55667a;
+	padding: 18px 0;
+}
+
+@media (max-width: 1100px) {
+	body .ticket-portal .controls {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	body .ticket-portal .grid {
+		grid-template-columns: 1fr;
+	}
+
+	body .ticket-portal .card {
+		grid-template-columns: 1fr;
+	}
+
+	body .ticket-portal .preview {
+		border-right: 0;
+		border-bottom: 1px solid #d9e2ec;
+		min-height: 220px;
+	}
+}
+  </style>
+</head>
+<body>
+<div class="ticket-portal">
+  <main>
+    <header>
+      <h1>Coolman Fuels Ticket Database</h1>
+      <p>Public ticket lookup with grouped customer search and print-all</p>
+    </header>
+
+    <section class="controls">
+      <input id="q" type="search" placeholder="Enter account(s), customer, ticket ref, or file. Customer searches expand to all listed accounts." />
+      <input id="fromDate" type="date" aria-label="From date" title="From date" />
+      <input id="toDate" type="date" aria-label="To date" title="To date" />
+      <select id="sortBy" aria-label="Sort results" title="Sort results">
+        <option value="account">Sort: Account #</option>
+        <option value="date_desc">Sort: Date (newest)</option>
+        <option value="date_asc">Sort: Date (oldest)</option>
+      </select>
+      <button id="applyBtn" type="button">Search</button>
+      <button id="printAllBtn" type="button">Print All</button>
+      <button id="clearBtn" class="alt" type="button">Clear</button>
+    </section>
+
+    <div class="meta">
+      <div id="resultCount">Loading...</div>
+      <div id="dataState">Loading public ticket data...</div>
+      <div id="searchInfo"></div>
+    </div>
+
+    <section id="grid" class="grid"></section>
+  </main>
+</div>
+  <script>
+(() => {
+	const TABLE_NAME = 'cr775_ticketrecord';
+	const ENTITY_SET = 'cr775_ticketrecords';
+	const STATIC_DATA_URL = '/tickets-data.json';
+	const PAGE_SIZE = 5000;
+	const SELECT_COLUMNS = 'cr775_recordidentifier,cr775_externalkey,cr775_accountnumber,cr775_customername,cr775_ticketreference,cr775_sourcefile,cr775_pagenumber,cr775_filedate,cr775_deliverydate,cr775_filenamedate,cr775_searchdate,cr775_litresdelivered,cr775_fueltype,cr775_deliveryaddress,cr775_pdfurl,cr775_pageurl,cr775_previewurl';
+	const WEBAPI_ENABLED_SETTING = 'Webapi/' + TABLE_NAME + '/enabled';
+	const WEBAPI_FIELDS_SETTING = 'Webapi/' + TABLE_NAME + '/fields';
+	const PRINT_WINDOW_TITLE = 'Coolman Fuels Ticket Print Batch';
+	let customerGroups = [];
+	let searchInfoEl = null;
+
+	function text(value) {
+		return (value || '').toString().trim();
+	}
+
+	function digitsOnly(value) {
+		return text(value).replace(/\D/g, '');
+	}
+
+	function normalizeSearchText(value) {
+		return text(value)
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function escapeHtml(value) {
+		return text(value)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function parseQueryTerms(raw) {
+		return text(raw)
+			.split(/[;,\n]+/)
+			.map((part) => part.trim().toLowerCase())
+			.filter((part) => part.length > 0);
+	}
+
+	function inDateRange(itemDate, fromDate, toDate) {
+		if (!itemDate) {
+			return !(fromDate || toDate);
+		}
+		if (fromDate && itemDate < fromDate) {
+			return false;
+		}
+		if (toDate && itemDate > toDate) {
+			return false;
+		}
+		return true;
+	}
+
+	function matchesTerm(record, term, searchContext) {
+		if (!term) {
+			return true;
+		}
+		const haystack = [record.account, record.customer, record.ticket_ref, record.source_file, record.page, record.search_date]
+			.map(text)
+			.join('\n')
+			.toLowerCase();
+		if (haystack.indexOf(term) !== -1) {
+			return true;
+		}
+		const digits = term.replace(/\D/g, '');
+		if (!digits) {
+			return searchContext.expandedAccounts.has(text(record.account));
+		}
+		return digitsOnly(record.account).indexOf(digits) !== -1
+			|| digitsOnly(record.ticket_ref).indexOf(digits) !== -1
+			|| searchContext.expandedAccounts.has(text(record.account));
+	}
+
+	function matchesQuery(record, terms, searchContext) {
+		if (!terms.length) {
+			return true;
+		}
+		return terms.some((term) => matchesTerm(record, term, searchContext));
+	}
+
+	function buildSearchContext(terms) {
+		const expandedAccounts = new Set();
+		const matchedGroups = [];
+		const seenGroups = new Set();
+
+		terms.forEach((term) => {
+			const normalizedTerm = normalizeSearchText(term);
+			if (!normalizedTerm || normalizedTerm.length < 3) {
+				return;
+			}
+			if (digitsOnly(normalizedTerm).length >= 5) {
+				return;
+			}
+
+			customerGroups.forEach((group) => {
+				const normalizedGroup = text(group.normalized) || normalizeSearchText(group.customer);
+				if (!normalizedGroup) {
+					return;
+				}
+				if (normalizedGroup.indexOf(normalizedTerm) === -1 && normalizedTerm.indexOf(normalizedGroup) === -1) {
+					return;
+				}
+				if (!seenGroups.has(normalizedGroup)) {
+					seenGroups.add(normalizedGroup);
+					matchedGroups.push(group);
+				}
+				(group.accounts || []).forEach((account) => expandedAccounts.add(text(account)));
+			});
+		});
+
+		return { expandedAccounts, matchedGroups };
+	}
+
+	function normalize(row) {
+		return {
+			account: text(row.cr775_accountnumber),
+			customer: text(row.cr775_customername),
+			ticket_ref: text(row.cr775_ticketreference),
+			source_file: text(row.cr775_sourcefile),
+			page: text(row.cr775_pagenumber),
+			file_date: text(row.cr775_filedate),
+			delivery_date: text(row.cr775_deliverydate),
+			filename_date: text(row.cr775_filenamedate),
+			search_date: text(row.cr775_searchdate),
+			litres: text(row.cr775_litresdelivered),
+			fuel_type: text(row.cr775_fueltype),
+			delivery_address: text(row.cr775_deliveryaddress),
+			pdf_url: text(row.cr775_pdfurl),
+			page_url: text(row.cr775_pageurl),
+			preview_url: text(row.cr775_previewurl)
+		};
+	}
+
+	function explainError(error) {
+		if (!error) {
+			return 'Unknown error';
+		}
+		if (error.responseJSON && error.responseJSON.error && error.responseJSON.error.message) {
+			return text(error.responseJSON.error.message);
+		}
+		if (error.status && error.statusText) {
+			return error.status + ' ' + error.statusText;
+		}
+		if (error.status) {
+			return 'HTTP ' + error.status;
+		}
+		return text(error.message) || String(error);
+	}
+
+	function safeAjaxGet(url) {
+		return new Promise((resolve, reject) => {
+			if (window.webapi && typeof window.webapi.safeAjax === 'function') {
+				window.webapi.safeAjax({
+					type: 'GET',
+					url,
+					contentType: 'application/json',
+					success: resolve,
+					error: reject
+				});
+				return;
+			}
+
+			if (window.shell && typeof window.shell.getTokenDeferred === 'function' && window.jQuery) {
+				window.shell.getTokenDeferred().done((token) => {
+					window.jQuery.ajax({
+						type: 'GET',
+						url,
+						contentType: 'application/json',
+						headers: {
+							__RequestVerificationToken: token,
+							Accept: 'application/json'
+						},
+						success: resolve,
+						error: reject
+					});
+				}).fail(reject);
+				return;
+			}
+
+			fetch(url, {
+				headers: { Accept: 'application/json' },
+				credentials: 'same-origin'
+			})
+				.then((response) => {
+					if (!response.ok) {
+						throw new Error('Dataverse request failed: ' + response.status);
+					}
+					return response.json();
+				})
+				.then(resolve)
+				.catch(reject);
+		});
+	}
+
+	async function loadAllRows() {
+		let url = '/_api/' + ENTITY_SET + '?$select=' + SELECT_COLUMNS + '&$top=' + PAGE_SIZE;
+		const rows = [];
+		while (url) {
+			const payload = await safeAjaxGet(url);
+			rows.push(...(payload.value || []));
+			const nextLink = payload['@odata.nextLink'];
+			url = nextLink ? nextLink.replace(window.location.origin, '') : '';
+		}
+		return rows.map(normalize);
+	}
+
+	async function loadStaticRows() {
+		const response = await fetch(STATIC_DATA_URL, {
+			headers: { Accept: 'application/json' },
+			credentials: 'same-origin',
+			cache: 'no-store'
+		});
+		if (!response.ok) {
+			throw new Error('Static ticket data request failed: ' + response.status);
+		}
+		const payload = await response.json();
+		customerGroups = payload.customer_groups || [];
+		return (payload.tickets || []).map((row) => ({
+			account: text(row.account),
+			customer: text(row.customer),
+			ticket_ref: text(row.ticket_ref),
+			source_file: text(row.source_file),
+			page: text(row.page),
+			file_date: text(row.file_date),
+			delivery_date: text(row.delivery_date),
+			filename_date: text(row.filename_date),
+			search_date: text(row.search_date),
+			litres: text(row.litres),
+			fuel_type: text(row.fuel_type),
+			delivery_address: text(row.delivery_address),
+			pdf_url: text(row.pdf_url),
+			page_url: text(row.page_url),
+			preview_url: text(row.preview_url)
+		}));
+	}
+
+	function cardHtml(record) {
+		const preview = record.preview_url
+			? '<img loading="lazy" src="' + record.preview_url + '" alt="' + text(record.source_file) + ' page ' + text(record.page) + '">'
+			: '<div class="noimg">No preview image</div>';
+		const pageUrl = text(record.page_url);
+		return [
+			'<article class="card">',
+			'<div class="preview">' + preview + '</div>',
+			'<div class="info">',
+			'<div class="row"><div class="k">Account</div><div class="v">' + (text(record.account) || '-') + '</div></div>',
+			'<div class="row"><div class="k">Customer</div><div class="v">' + (text(record.customer) || '-') + '</div></div>',
+			'<div class="row"><div class="k">Ticket Date</div><div class="v">' + (text(record.search_date) || '-') + '</div></div>',
+			'<div class="row"><div class="k">Ticket Ref</div><div class="v">' + (text(record.ticket_ref) || '-') + '</div></div>',
+			'<div class="row"><div class="k">File / Page</div><div class="v">' + text(record.source_file) + ' / p.' + text(record.page) + '</div></div>',
+			'<div class="row"><div class="k">Address</div><div class="v">' + (text(record.delivery_address) || '-') + '</div></div>',
+			'<div class="actions">',
+			(pageUrl ? '<a class="primary" target="_blank" href="' + pageUrl + '">Open Preview</a>' : ''),
+			(pageUrl ? '<a target="_blank" href="' + pageUrl + '">Print Preview</a>' : ''),
+			'</div>',
+			'</div>',
+			'</article>'
+		].join('');
+	}
+
+	function updateSearchInfo(searchContext, filtered) {
+		if (!searchInfoEl) {
+			return;
+		}
+		if (!searchContext.matchedGroups.length) {
+			searchInfoEl.textContent = filtered.length
+				? 'Tip: customer searches expand to every matching account in your customer list.'
+				: '';
+			return;
+		}
+		const summary = searchContext.matchedGroups
+			.slice(0, 3)
+			.map((group) => text(group.customer) + ' -> ' + (group.accounts || []).join(', '))
+			.join(' | ');
+		const suffix = searchContext.matchedGroups.length > 3 ? ' | more matches available' : '';
+		searchInfoEl.textContent = 'Expanded customer accounts: ' + summary + suffix;
+	}
+
+	function printableRecords(records) {
+		return records.filter((record) => record.preview_url || record.page_url);
+	}
+
+	function printBatch(records) {
+		const pages = printableRecords(records);
+		if (!pages.length) {
+			window.alert('No printable ticket pages are available for this search.');
+			return;
+		}
+
+		const printWindow = window.open('', '_blank');
+		if (!printWindow) {
+			window.alert('Allow pop-ups for this site to use Print All.');
+			return;
+		}
+
+		const sheets = pages.map((record, index) => {
+			const image = record.preview_url
+				? '<img src="' + escapeHtml(record.preview_url) + '" alt="' + escapeHtml(record.source_file + ' page ' + record.page) + '">' 
+				: '<div class="missing">Preview unavailable. Open the ticket page from the portal.</div>';
+			const links = record.page_url
+				? '<div class="links">Ticket page: ' + escapeHtml(record.page_url) + '</div>'
+				: '';
+			return [
+				'<section class="sheet">',
+				'<div class="sheet-header">',
+				'<div><strong>' + escapeHtml(record.customer || 'Unknown Customer') + '</strong></div>',
+				'<div>Account ' + escapeHtml(record.account || '-') + ' | Date ' + escapeHtml(record.search_date || '-') + '</div>',
+				'<div>' + escapeHtml(record.source_file) + ' / p.' + escapeHtml(record.page) + ' | Ticket Ref ' + escapeHtml(record.ticket_ref || '-') + '</div>',
+				'</div>',
+				'<div class="sheet-image">' + image + '</div>',
+				links,
+				'</section>'
+			].join('');
+		}).join('');
+
+		printWindow.document.open();
+		printWindow.document.write([
+			'<!doctype html>',
+			'<html><head><title>' + PRINT_WINDOW_TITLE + '</title>',
+			'<style>',
+				'body{font-family:Segoe UI,Tahoma,sans-serif;margin:0;padding:24px;background:#fff;color:#17212b;}',
+				'h1{margin:0 0 8px;font-size:24px;}',
+				'p{margin:0 0 18px;color:#55667a;}',
+				'.sheet{page-break-after:always;margin:0 0 18px;}',
+				'.sheet:last-child{page-break-after:auto;}',
+				'.sheet-header{margin-bottom:12px;font-size:14px;line-height:1.45;}',
+				'.sheet-image{border:1px solid #d9e2ec;border-radius:10px;overflow:hidden;}',
+				'.sheet-image img{display:block;width:100%;height:auto;}',
+				'.links{margin-top:8px;font-size:11px;word-break:break-all;color:#55667a;}',
+				'.missing{padding:24px;border:1px dashed #c7d4e2;border-radius:10px;color:#55667a;}',
+				'@media print{body{padding:0 12mm;}.sheet{break-inside:avoid;}}',
+			'</style></head><body>',
+			'<h1>Coolman Fuels Ticket Print Batch</h1>',
+			'<p>' + pages.length + ' ticket page(s) prepared from the current search.</p>',
+			sheets,
+			'<script>',
+				'(function(){const trigger=function(){setTimeout(function(){window.print();},300);};',
+				'const images=Array.prototype.slice.call(document.images);',
+				'if(!images.length){trigger();return;}',
+				'let pending=images.length;const done=function(){pending-=1;if(pending<=0){trigger();}};',
+				'images.forEach(function(img){if(img.complete){done();return;}img.addEventListener("load",done,{once:true});img.addEventListener("error",done,{once:true});});',
+				'setTimeout(trigger,2500);window.addEventListener("afterprint",function(){window.close();});})();',
+			'</' + 'script>',
+			'</body></html>'
+		].join(''));
+		printWindow.document.close();
+	}
+
+	function attachBehavior() {
+		const gridEl = document.getElementById('grid');
+		const countEl = document.getElementById('resultCount');
+		const stateEl = document.getElementById('dataState');
+		searchInfoEl = document.getElementById('searchInfo');
+		const qEl = document.getElementById('q');
+		const fromEl = document.getElementById('fromDate');
+		const toEl = document.getElementById('toDate');
+		const sortEl = document.getElementById('sortBy');
+		const applyBtn = document.getElementById('applyBtn');
+		const printAllBtn = document.getElementById('printAllBtn');
+		const clearBtn = document.getElementById('clearBtn');
+
+		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !printAllBtn || !clearBtn) {
+			return;
+		}
+
+		let data = [];
+		let lastFiltered = [];
+
+		function render() {
+			const terms = parseQueryTerms(qEl.value);
+			const fromDate = fromEl.value;
+			const toDate = toEl.value;
+			const searchContext = buildSearchContext(terms);
+			const filtered = data.filter((record) => matchesQuery(record, terms, searchContext) && inDateRange(record.search_date, fromDate, toDate));
+			const sortMode = sortEl.value;
+			filtered.sort((a, b) => {
+				if (sortMode === 'date_desc') {
+					const dateCmp = text(b.filename_date || b.search_date).localeCompare(text(a.filename_date || a.search_date));
+					if (dateCmp !== 0) {
+						return dateCmp;
+					}
+					return (parseInt(text(a.page), 10) || 0) - (parseInt(text(b.page), 10) || 0);
+				}
+				if (sortMode === 'date_asc') {
+					const dateCmp = text(a.filename_date || a.search_date).localeCompare(text(b.filename_date || b.search_date));
+					if (dateCmp !== 0) {
+						return dateCmp;
+					}
+					return (parseInt(text(a.page), 10) || 0) - (parseInt(text(b.page), 10) || 0);
+				}
+				const aAcct = parseInt(digitsOnly(a.account) || '9999999999', 10);
+				const bAcct = parseInt(digitsOnly(b.account) || '9999999999', 10);
+				return (aAcct - bAcct)
+					|| text(a.account).localeCompare(text(b.account))
+					|| text(b.filename_date || b.search_date).localeCompare(text(a.filename_date || a.search_date))
+					|| (parseInt(text(a.page), 10) || 0) - (parseInt(text(b.page), 10) || 0);
+			});
+			lastFiltered = filtered;
+			printAllBtn.disabled = printableRecords(filtered).length === 0;
+			const uniqueAccounts = new Set(filtered.map((record) => text(record.account)).filter(Boolean));
+			countEl.textContent = filtered.length + ' result' + (filtered.length === 1 ? '' : 's') + (filtered.length ? ' across ' + uniqueAccounts.size + ' account' + (uniqueAccounts.size === 1 ? '' : 's') : '');
+			updateSearchInfo(searchContext, filtered);
+			if (!filtered.length) {
+				gridEl.innerHTML = '<article class="card"><div class="info"><div class="v">No tickets match these filters.</div></div></article>';
+				return;
+			}
+			gridEl.innerHTML = filtered.map(cardHtml).join('');
+		}
+
+		async function init() {
+			try {
+				stateEl.textContent = 'Loading ticket data...';
+				try {
+					data = await loadStaticRows();
+					stateEl.textContent = 'Static site data source: tickets-data.json | Loaded rows: ' + data.length;
+				} catch (staticError) {
+					console.warn('Static ticket data load failed, falling back to Dataverse.', staticError);
+					data = await loadAllRows();
+					stateEl.textContent = 'Dataverse source: ' + ENTITY_SET + ' | Loaded rows: ' + data.length;
+				}
+				render();
+			} catch (error) {
+				console.error(error);
+				const errorText = explainError(error);
+				countEl.textContent = 'Failed to load ticket data';
+				stateEl.textContent = 'Power Pages could not load ticket data: ' + errorText;
+				gridEl.innerHTML = [
+					'<article class="card"><div class="info">',
+					'<div class="v">Dataverse data could not be loaded.</div>',
+					'<div class="row"><div class="k">Static Data URL</div><div class="v">' + escapeHtml(STATIC_DATA_URL) + '</div></div>',
+					'<div class="row"><div class="k">Entity Set</div><div class="v">' + escapeHtml(ENTITY_SET) + '</div></div>',
+					'<div class="row"><div class="k">Table Logical Name</div><div class="v">' + escapeHtml(TABLE_NAME) + '</div></div>',
+					'<div class="row"><div class="k">Web API Site Setting</div><div class="v">' + escapeHtml(WEBAPI_ENABLED_SETTING) + ' = true</div></div>',
+					'<div class="row"><div class="k">Allowed Fields Setting</div><div class="v">' + escapeHtml(WEBAPI_FIELDS_SETTING) + '</div></div>',
+					'<div class="row"><div class="k">Required Table Permission</div><div class="v">Read access on ' + escapeHtml(TABLE_NAME) + ' for the current web role.</div></div>',
+					'<div class="row"><div class="k">Likely Cause</div><div class="v">The Power Pages site cannot read /_api/' + escapeHtml(ENTITY_SET) + '. Check the table permission, Web API site settings, and that the page is using the correct entity set name.</div></div>',
+					'<div class="row"><div class="k">Request Error</div><div class="v">' + escapeHtml(errorText) + '</div></div>',
+					'</div></article>'
+				].join('');
+			}
+		}
+
+		applyBtn.addEventListener('click', render);
+		printAllBtn.addEventListener('click', () => printBatch(lastFiltered));
+		clearBtn.addEventListener('click', () => {
+			qEl.value = '';
+			fromEl.value = '';
+			toEl.value = '';
+			render();
+		});
+		qEl.addEventListener('input', render);
+		qEl.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				render();
+			}
+		});
+		fromEl.addEventListener('change', render);
+		toEl.addEventListener('change', render);
+		sortEl.addEventListener('change', render);
+		init();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', attachBehavior);
+	} else {
+		attachBehavior();
+	}
+})();
+  </script>
+</body>
+</html>
