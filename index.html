@@ -832,7 +832,16 @@ body .ticket-portal .status {
 		return parts.join('');
 	}
 
-	function buildPdfFilename(records) {
+	function sanitizeFilenamePart(value) {
+		const cleaned = text(value)
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '')
+			.slice(0, 48);
+		return cleaned || 'ticket-search';
+	}
+
+	function buildPdfFilename(records, queryText) {
 		const datedRecords = records
 			.map((record) => text(record.filename_date || record.search_date).replace(/[^0-9-]/g, ''))
 			.filter(Boolean)
@@ -840,10 +849,11 @@ body .ticket-portal .status {
 		const dateFragment = datedRecords.length
 			? datedRecords[0].replace(/-/g, '') + (datedRecords[datedRecords.length - 1] !== datedRecords[0] ? '_to_' + datedRecords[datedRecords.length - 1].replace(/-/g, '') : '')
 			: currentTimestampStamp();
-		return 'coolman-ticket-search-' + dateFragment + '.pdf';
+		const searchFragment = sanitizeFilenamePart(queryText);
+		return 'coolman-ticket-search-' + searchFragment + '-' + dateFragment + '.pdf';
 	}
 
-	async function downloadBatchPdf(records, onProgress) {
+	async function downloadBatchPdf(records, queryText, onProgress) {
 		const pages = printableRecords(records);
 		if (!pages.length) {
 			throw new Error('No ticket preview images are available for this search.');
@@ -884,7 +894,7 @@ body .ticket-portal .status {
 			throw new Error('No ticket preview images could be added to the PDF.');
 		}
 
-		pdf.save(buildPdfFilename(pages));
+		pdf.save(buildPdfFilename(pages, queryText));
 		return { savedCount, failures };
 	}
 
@@ -1046,7 +1056,7 @@ body .ticket-portal .status {
 			savePdfBtn.textContent = 'Saving PDF...';
 
 			try {
-				const result = await downloadBatchPdf(lastFiltered, (current, total, record) => {
+				const result = await downloadBatchPdf(lastFiltered, qEl.value, (current, total, record) => {
 					stateEl.textContent = 'Generating PDF: ' + current + ' of ' + total + ' | ' + (text(record.account) || text(record.customer) || 'ticket image');
 				});
 				stateEl.textContent = defaultStateText;
