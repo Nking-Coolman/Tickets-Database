@@ -1,5 +1,5 @@
 Object Storage Publish
-Generated: 2026-04-02
+Generated: 2026-04-07
 
 Use this when you want the ticket site on S3-compatible storage with a CDN or custom domain.
 Examples: Cloudflare R2, Backblaze B2 (S3 API), AWS S3, MinIO.
