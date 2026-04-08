@@ -1,10 +1,10 @@
 Public Static Ticket Portal Deployment
-Generated: 2026-04-07
+Generated: 2026-04-08
 
 Included files:
 - index.html
 - tickets-data.json
-- ticket-preview-*.png (1714 files)
+- ticket-preview-*.png (1760 files)
 - _deploy/object-storage/*
 - _deploy/self-hosted/*
 

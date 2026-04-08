@@ -1,5 +1,5 @@
 Self-Hosted Server Publish
-Generated: 2026-04-07
+Generated: 2026-04-08
 
 This folder runs the ticket site on your own small server with Docker Compose + Caddy.
 It serves the bundle root two levels up from this folder.
