@@ -1,10 +1,10 @@
 Public Static Ticket Portal Deployment
-Generated: 2026-04-08
+Generated: 2026-04-14
 
 Included files:
 - index.html
 - tickets-data.json
-- ticket-preview-*.png (1760 files)
+- ticket-preview-*.png (1861 files)
 - _deploy/object-storage/*
 - _deploy/self-hosted/*
 
@@ -24,4 +24,4 @@ Run this command to set URL + regenerate QR:
   .venv\Scripts\python.exe DataAnalysisExpert\build_always_on_site_bundle.py --public-url "<YOUR_PUBLIC_URL>" --skip-bundle
 
 Current portal_public_url in settings:
-https://nking-coolman.github.io/Tickets-Database/?v=20260402-1447
+https://nking-coolman.github.io/Tickets-Database/?v=20260414-0910

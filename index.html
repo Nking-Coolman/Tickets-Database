@@ -136,9 +136,48 @@ body .ticket-portal .controls {
 	border-radius: 14px;
 	padding: 14px;
 	display: grid;
-	grid-template-columns: 1.2fr 0.8fr 0.8fr 0.9fr auto auto auto;
-	gap: 8px;
+	grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) auto auto;
+	gap: 10px;
 	box-shadow: 0 10px 24px var(--cf-shadow);
+	align-items: end;
+}
+
+body .ticket-portal .control-stack {
+	display: grid;
+	gap: 8px;
+	min-width: 0;
+}
+
+body .ticket-portal .control-stack-filters {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body .ticket-portal .control-stack-actions {
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(0, 1fr);
+	align-self: stretch;
+}
+
+body .ticket-portal .control-field {
+	display: grid;
+	gap: 5px;
+	min-width: 0;
+}
+
+body .ticket-portal .control-field label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #f4b2ac;
+	padding-left: 2px;
+}
+
+body .ticket-portal .control-hint {
+	font-size: 12px;
+	line-height: 1.35;
+	color: var(--cf-muted);
+	padding-left: 2px;
 }
 
 body .ticket-portal .controls input,
@@ -148,9 +187,10 @@ body .ticket-portal .controls select {
 	border-radius: 8px;
 	border: 1px solid #cfcfcf;
 	font-size: 14px;
-	padding: 8px 10px;
+	padding: 8px 11px;
 	background: #151515;
 	color: var(--cf-ink);
+	width: 100%;
 }
 
 body .ticket-portal .controls input:focus,
@@ -177,6 +217,10 @@ body .ticket-portal .controls button.alt {
 	color: #f7c8c3;
 	border-color: #6f3530;
 	box-shadow: none;
+}
+
+body .ticket-portal .controls button#applyBtn {
+	min-width: 104px;
 }
 
 body .ticket-portal .controls button:hover {
@@ -216,13 +260,13 @@ body .ticket-portal .card {
 	overflow: hidden;
 	box-shadow: 0 10px 26px var(--cf-shadow);
 	display: grid;
-	grid-template-columns: 1.1fr 1fr;
+	grid-template-columns: minmax(230px, 0.92fr) minmax(0, 1fr);
 }
 
 body .ticket-portal .preview {
 	background: linear-gradient(180deg, #1d1d1d, #141414);
 	border-right: 1px solid var(--cf-border);
-	min-height: 280px;
+	min-height: 250px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -231,8 +275,22 @@ body .ticket-portal .preview {
 body .ticket-portal .preview img {
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
+	object-fit: contain;
 	display: block;
+}
+
+body .ticket-portal .empty-state {
+	padding: 28px 24px;
+	text-align: center;
+	color: var(--cf-muted);
+	background: linear-gradient(180deg, rgba(242, 101, 84, 0.08), rgba(1, 84, 126, 0.02));
+}
+
+body .ticket-portal .empty-state strong {
+	display: block;
+	color: var(--cf-ink);
+	font-size: 18px;
+	margin-bottom: 8px;
 }
 
 body .ticket-portal .noimg {
@@ -245,7 +303,8 @@ body .ticket-portal .noimg {
 body .ticket-portal .info {
 	padding: 12px;
 	display: grid;
-	gap: 6px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px 12px;
 	align-content: start;
 	background:
 		linear-gradient(180deg, rgba(242, 101, 84, 0.08), rgba(242, 101, 84, 0) 70%),
@@ -262,6 +321,7 @@ body .ticket-portal .k {
 
 body .ticket-portal .v {
 	font-size: 14px;
+	line-height: 1.25;
 }
 
 body .ticket-portal .row {
@@ -269,8 +329,13 @@ body .ticket-portal .row {
 	gap: 2px;
 }
 
+body .ticket-portal .row.row-wide,
 body .ticket-portal .actions {
-	margin-top: 6px;
+	grid-column: 1 / -1;
+}
+
+body .ticket-portal .actions {
+	margin-top: 2px;
 	display: flex;
 	gap: 8px;
 	flex-wrap: wrap;
@@ -279,7 +344,7 @@ body .ticket-portal .actions {
 body .ticket-portal .actions a {
 	text-decoration: none;
 	font-size: 13px;
-	padding: 8px 10px;
+	padding: 7px 10px;
 	border-radius: 8px;
 	border: 1px solid var(--cf-border);
 	color: var(--cf-ink);
@@ -307,11 +372,11 @@ body .ticket-portal .status {
 	}
 
 	body .ticket-portal .controls {
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr;
 	}
 
-	body .ticket-portal .grid {
-		grid-template-columns: 1fr;
+	body .ticket-portal .control-stack-actions {
+		grid-auto-flow: column;
 	}
 
 	body .ticket-portal .card {
@@ -322,6 +387,14 @@ body .ticket-portal .status {
 		border-right: 0;
 		border-bottom: 1px solid var(--cf-border);
 		min-height: 220px;
+	}
+
+	body .ticket-portal .info {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	body .ticket-portal .grid {
+		grid-template-columns: 1fr;
 	}
 }
 
@@ -343,7 +416,62 @@ body .ticket-portal .status {
 	}
 
 	body .ticket-portal .controls {
+		padding: 12px;
+		gap: 12px;
+	}
+
+	body .ticket-portal .control-stack-filters,
+	body .ticket-portal .control-stack-actions {
 		grid-template-columns: 1fr;
+		grid-auto-flow: row;
+	}
+
+	body .ticket-portal .controls input,
+	body .ticket-portal .controls button,
+	body .ticket-portal .controls select {
+		min-height: 44px;
+		font-size: 16px;
+	}
+
+	body .ticket-portal .control-hint {
+		font-size: 11px;
+	}
+
+	body .ticket-portal .meta {
+		margin: 10px 0 12px;
+		font-size: 13px;
+	}
+
+	body .ticket-portal .card {
+		border-radius: 12px;
+	}
+
+	body .ticket-portal .preview {
+		min-height: 180px;
+	}
+
+	body .ticket-portal .info {
+		grid-template-columns: 1fr;
+		gap: 7px;
+		padding: 11px;
+	}
+
+	body .ticket-portal .row.row-wide,
+	body .ticket-portal .actions {
+		grid-column: auto;
+	}
+
+	body .ticket-portal .actions {
+		gap: 7px;
+	}
+
+	body .ticket-portal .actions a {
+		flex: 1 1 calc(50% - 7px);
+		text-align: center;
+	}
+
+	body .ticket-portal .v {
+		font-size: 13px;
 	}
 }
   </style>
@@ -367,18 +495,43 @@ body .ticket-portal .status {
     </header>
 
     <section class="controls">
-      <input id="q" type="search" placeholder="Enter account(s), customer, ticket ref, or file. Customer searches expand to all listed accounts." />
-      <input id="fromDate" type="date" aria-label="From date" title="From date" />
-      <input id="toDate" type="date" aria-label="To date" title="To date" />
-      <select id="sortBy" aria-label="Sort results" title="Sort results">
-        <option value="account">Sort: Account #</option>
-        <option value="date_desc">Sort: Date (newest)</option>
-        <option value="date_asc">Sort: Date (oldest)</option>
-      </select>
-      <button id="applyBtn" type="button">Search</button>
-      <button id="printAllBtn" type="button">Print All</button>
-      <button id="savePdfBtn" type="button">Save PDF</button>
-      <button id="clearBtn" class="alt" type="button">Clear</button>
+      <div class="control-stack control-stack-search">
+        <div class="control-field control-field-search">
+          <label for="q">Search tickets</label>
+          <input id="q" type="search" placeholder="Account, customer, ticket ref, or file" />
+          <div class="control-hint">Customer searches expand to every linked account automatically.</div>
+        </div>
+      </div>
+
+      <div class="control-stack control-stack-filters">
+        <div class="control-field">
+          <label for="fromDate">From</label>
+          <input id="fromDate" type="date" aria-label="From date" title="From date" />
+        </div>
+        <div class="control-field">
+          <label for="toDate">To</label>
+          <input id="toDate" type="date" aria-label="To date" title="To date" />
+        </div>
+        <div class="control-field">
+          <label for="sortBy">Sort</label>
+          <select id="sortBy" aria-label="Sort results" title="Sort results">
+            <option value="account">Account #</option>
+            <option value="date_desc">Date: newest</option>
+            <option value="date_asc">Date: oldest</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-stack control-stack-actions primary-actions">
+        <button id="applyBtn" type="button">Search</button>
+        <button id="copyLinkBtn" class="alt" type="button">Copy Link</button>
+        <button id="clearBtn" class="alt" type="button">Clear</button>
+      </div>
+
+      <div class="control-stack control-stack-actions secondary-actions">
+        <button id="printAllBtn" type="button">Print All</button>
+        <button id="savePdfBtn" type="button">Save PDF</button>
+      </div>
     </section>
 
     <div class="meta">
@@ -404,6 +557,7 @@ body .ticket-portal .status {
 	let customerGroups = [];
 	let searchInfoEl = null;
 	let pdfLibPromise = null;
+	const DEFAULT_COPY_BUTTON_TEXT = 'Copy Link';
 
 	function text(value) {
 		return (value || '').toString().trim();
@@ -466,6 +620,50 @@ body .ticket-portal .status {
 			.split(/[;,\n]+/)
 			.map((part) => part.trim().toLowerCase())
 			.filter((part) => part.length > 0);
+	}
+
+	function loadStateFromUrl(qEl, fromEl, toEl, sortEl) {
+		const params = new URLSearchParams(window.location.search || '');
+		qEl.value = text(params.get('q'));
+		fromEl.value = text(params.get('from'));
+		toEl.value = text(params.get('to'));
+		sortEl.value = text(params.get('sort')) || 'account';
+	}
+
+	function syncUrlState(qEl, fromEl, toEl, sortEl) {
+		const url = new URL(window.location.href);
+		const params = url.searchParams;
+		const query = text(qEl.value);
+		const fromDate = text(fromEl.value);
+		const toDate = text(toEl.value);
+		const sortMode = text(sortEl.value) || 'account';
+
+		if (query) {
+			params.set('q', query);
+		} else {
+			params.delete('q');
+		}
+		if (fromDate) {
+			params.set('from', fromDate);
+		} else {
+			params.delete('from');
+		}
+		if (toDate) {
+			params.set('to', toDate);
+		} else {
+			params.delete('to');
+		}
+		if (sortMode && sortMode !== 'account') {
+			params.set('sort', sortMode);
+		} else {
+			params.delete('sort');
+		}
+
+		window.history.replaceState(
+			null,
+			'',
+			url.pathname + (params.toString() ? '?' + params.toString() : '')
+		);
 	}
 
 	function inDateRange(itemDate, fromDate, toDate) {
@@ -665,20 +863,28 @@ body .ticket-portal .status {
 	}
 
 	function cardHtml(record) {
+		const customer = escapeHtml(record.customer || '-');
+		const account = escapeHtml(record.account || '-');
+		const ticketDate = escapeHtml(record.search_date || '-');
+		const ticketRef = escapeHtml(record.ticket_ref || '-');
+		const fileAndPage = escapeHtml(text(record.source_file) + ' / p.' + text(record.page));
+		const address = escapeHtml(record.delivery_address || '-');
+		const pageUrl = escapeHtml(text(record.page_url));
+		const previewUrl = escapeHtml(text(record.preview_url));
+		const previewAlt = escapeHtml(text(record.source_file) + ' page ' + text(record.page));
 		const preview = record.preview_url
-			? '<img loading="lazy" src="' + record.preview_url + '" alt="' + text(record.source_file) + ' page ' + text(record.page) + '">'
+			? '<img loading="lazy" decoding="async" src="' + previewUrl + '" alt="' + previewAlt + '">'
 			: '<div class="noimg">No preview image</div>';
-		const pageUrl = text(record.page_url);
 		return [
 			'<article class="card">',
 			'<div class="preview">' + preview + '</div>',
 			'<div class="info">',
-			'<div class="row"><div class="k">Account</div><div class="v">' + (text(record.account) || '-') + '</div></div>',
-			'<div class="row"><div class="k">Customer</div><div class="v">' + (text(record.customer) || '-') + '</div></div>',
-			'<div class="row"><div class="k">Ticket Date</div><div class="v">' + (text(record.search_date) || '-') + '</div></div>',
-			'<div class="row"><div class="k">Ticket Ref</div><div class="v">' + (text(record.ticket_ref) || '-') + '</div></div>',
-			'<div class="row"><div class="k">File / Page</div><div class="v">' + text(record.source_file) + ' / p.' + text(record.page) + '</div></div>',
-			'<div class="row"><div class="k">Address</div><div class="v">' + (text(record.delivery_address) || '-') + '</div></div>',
+			'<div class="row"><div class="k">Account</div><div class="v">' + account + '</div></div>',
+			'<div class="row row-wide"><div class="k">Customer</div><div class="v">' + customer + '</div></div>',
+			'<div class="row"><div class="k">Ticket Date</div><div class="v">' + ticketDate + '</div></div>',
+			'<div class="row"><div class="k">Ticket Ref</div><div class="v">' + ticketRef + '</div></div>',
+			'<div class="row row-wide"><div class="k">File / Page</div><div class="v">' + fileAndPage + '</div></div>',
+			'<div class="row row-wide"><div class="k">Address</div><div class="v">' + address + '</div></div>',
 			'<div class="actions">',
 			(pageUrl ? '<a class="primary" target="_blank" href="' + pageUrl + '">Open Preview</a>' : ''),
 			(pageUrl ? '<a target="_blank" href="' + pageUrl + '">Print Preview</a>' : ''),
@@ -988,21 +1194,58 @@ body .ticket-portal .status {
 		const toEl = document.getElementById('toDate');
 		const sortEl = document.getElementById('sortBy');
 		const applyBtn = document.getElementById('applyBtn');
+		const copyLinkBtn = document.getElementById('copyLinkBtn');
 		const printAllBtn = document.getElementById('printAllBtn');
 		const savePdfBtn = document.getElementById('savePdfBtn');
 		const clearBtn = document.getElementById('clearBtn');
 
-		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
+		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
 			return;
 		}
 
 		let data = [];
 		let lastFiltered = [];
 
+		function renderEmptyState() {
+			lastFiltered = [];
+			printAllBtn.disabled = true;
+			savePdfBtn.disabled = true;
+			countEl.textContent = data.length + ' ticket page' + (data.length === 1 ? '' : 's') + ' indexed';
+			searchInfoEl.textContent = 'Enter an account, customer, ticket ref, or a date range to start searching.';
+			gridEl.innerHTML = [
+				'<article class="card">',
+				'<div class="info empty-state">',
+				'<strong>Ready for fast cabinet lookup</strong>',
+				'<div>Use the search box or date filters before loading ticket previews. This keeps the QR page fast on phones and shared devices.</div>',
+				'</div>',
+				'</article>'
+			].join('');
+		}
+
+		async function copyCurrentLink() {
+			syncUrlState(qEl, fromEl, toEl, sortEl);
+			try {
+				await navigator.clipboard.writeText(window.location.href);
+				copyLinkBtn.textContent = 'Link Copied';
+			} catch (error) {
+				console.warn('Copy link failed', error);
+				copyLinkBtn.textContent = 'Copy Failed';
+			}
+			window.setTimeout(() => {
+				copyLinkBtn.textContent = DEFAULT_COPY_BUTTON_TEXT;
+			}, 1400);
+		}
+
 		function render() {
 			const terms = parseQueryTerms(qEl.value);
 			const fromDate = fromEl.value;
 			const toDate = toEl.value;
+			const hasFilters = Boolean(terms.length || fromDate || toDate);
+			syncUrlState(qEl, fromEl, toEl, sortEl);
+			if (!hasFilters) {
+				renderEmptyState();
+				return;
+			}
 			const searchContext = buildSearchContext(terms);
 			const filtered = data.filter((record) => matchesQuery(record, terms, searchContext) && inDateRange(record.search_date, fromDate, toDate));
 			const sortMode = sortEl.value;
@@ -1042,6 +1285,8 @@ body .ticket-portal .status {
 			gridEl.innerHTML = filtered.map(cardHtml).join('');
 		}
 
+		loadStateFromUrl(qEl, fromEl, toEl, sortEl);
+		renderEmptyState();
 		async function init() {
 			try {
 				stateEl.textContent = 'Loading ticket data...';
@@ -1076,6 +1321,7 @@ body .ticket-portal .status {
 		}
 
 		applyBtn.addEventListener('click', render);
+		copyLinkBtn.addEventListener('click', copyCurrentLink);
 		printAllBtn.addEventListener('click', () => printBatch(lastFiltered));
 		savePdfBtn.addEventListener('click', async () => {
 			const defaultStateText = stateEl.textContent;
@@ -1104,6 +1350,7 @@ body .ticket-portal .status {
 			qEl.value = '';
 			fromEl.value = '';
 			toEl.value = '';
+			sortEl.value = 'account';
 			render();
 		});
 		qEl.addEventListener('input', render);
