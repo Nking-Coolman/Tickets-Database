@@ -24,4 +24,4 @@ Run this command to set URL + regenerate QR:
   .venv\Scripts\python.exe DataAnalysisExpert\build_always_on_site_bundle.py --public-url "<YOUR_PUBLIC_URL>" --skip-bundle
 
 Current portal_public_url in settings:
-https://nking-coolman.github.io/Tickets-Database/?v=20260414-0928
+https://nking-coolman.github.io/Tickets-Database/?v=20260414-0936

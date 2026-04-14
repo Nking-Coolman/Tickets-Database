@@ -696,6 +696,10 @@ body .ticket-portal .status {
 		return compact === 'wholesalemarketer'
 			|| compact === 'ofpetrocanada'
 			|| compact === 'coolmanfuels'
+			|| compact === 'coomanfuels'
+			|| compact === 'coolmanfuel'
+			|| compact === 'coomanfuel'
+			|| compact.indexOf('petrocanada') !== -1
 			|| compact.indexOf('hst') === 0;
 	}
 
@@ -704,7 +708,26 @@ body .ticket-portal .status {
 		if (!raw || !/^\d/.test(raw)) {
 			return false;
 		}
-		return /\b(?:line|road|rd|hwy|highway|street|st|drive|dr|avenue|ave|blvd|boulevard)\b/i.test(raw);
+		return /\b(?:line|lin|road|rd|hwy|highway|street|st|drive|dr|avenue|ave|blvd|boulevard|rr#?|rrn|rrw|rrm|rri)\b/i.test(raw);
+	}
+
+	function hasRecognizableCustomerShape(value) {
+		const raw = collapseDisplayText(value);
+		return /\b(?:farms?|farm|ltd|limited|inc|corp|corporation|construction|fuels?|trucking|feed|grains|produce|electric|livestock|dairy|holsteins|products?|equipment|concrete|roofing|management|manufacturing|services?|painting|brothers|acres|industries|hatchery|transport|landscaping|landscape|beef|poultry|hog|hogco|view|properties?)\b/i.test(raw)
+			|| /[A-Z][a-z]+\s+[A-Z][a-z]+/.test(raw)
+			|| raw.indexOf('&') !== -1;
+	}
+
+	function looksLikeProvincePostalNoise(value) {
+		const raw = compactLower(value);
+		const tokens = raw.split(/\s+/).filter(Boolean);
+		if (!tokens.length) {
+			return false;
+		}
+		if ((tokens[0] === 'on' || tokens[0] === 'ontario') && tokens.length <= 3 && tokens.slice(1).some((token) => /\d/.test(token))) {
+			return true;
+		}
+		return false;
 	}
 
 	function normalizeAddressSegment(value) {
@@ -720,6 +743,9 @@ body .ticket-portal .status {
 		if (!raw || raw === '-') {
 			return true;
 		}
+		if (raw.length <= 3 && !/^rr/i.test(lower)) {
+			return true;
+		}
 		if (looksLikeSeparatorNoise(raw) || looksLikeTinyNoise(raw) || looksLikePhone(raw)) {
 			return true;
 		}
@@ -732,13 +758,13 @@ body .ticket-portal .status {
 		if (lower === 'bill to' || lower === 'bill to:' || lower === 'partial drop' || lower === 'liv' || lower === 'livestock') {
 			return true;
 		}
-		if (lower === 'on' || lower === 'ontario' || looksLikePostalFragment(raw)) {
+		if (lower === 'on' || lower === 'ontario' || looksLikePostalFragment(raw) || looksLikeProvincePostalNoise(raw)) {
 			return true;
 		}
 		return false;
 	}
 
-	function cleanCustomerValue(value) {
+	function cleanCustomerValue(value, addressValue) {
 		const raw = collapseDisplayText(value);
 		if (!raw || raw === '-' || /^unknown$/i.test(raw)) {
 			return '';
@@ -753,6 +779,9 @@ body .ticket-portal .status {
 			return '';
 		}
 		if (looksLikeAddressAsCustomer(raw)) {
+			return '';
+		}
+		if ((looksLikePhone(addressValue) || looksLikeHeaderNoise(addressValue) || looksLikeTicketRefEcho(addressValue)) && !hasRecognizableCustomerShape(raw)) {
 			return '';
 		}
 		return raw;
@@ -1083,7 +1112,7 @@ body .ticket-portal .status {
 	}
 
 	function cardHtml(record) {
-		const customer = cleanCustomerValue(record.customer);
+		const customer = cleanCustomerValue(record.customer, record.delivery_address);
 		const account = collapseDisplayText(record.account) || '-';
 		const ticketDate = bestTicketDate(record);
 		const ticketRef = cleanTicketRefValue(record.ticket_ref);
