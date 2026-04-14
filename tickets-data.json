@@ -56172,6 +56172,23 @@
     },
     {
       "account": "8133017",
+      "customer": "Exeter Produce & Storase Co",
+      "ticket_ref": "",
+      "source_file": "tickets 02.20.20261.pdf",
+      "page": "8",
+      "file_date": "2026-02-20",
+      "delivery_date": "2026-02-20",
+      "filename_date": "2026-02-20",
+      "search_date": "2026-02-20",
+      "litres": "523.8",
+      "fuel_type": "",
+      "delivery_address": "215 Thames Rd. W. | Exeter | DRIVE; ID: DP02",
+      "pdf_url": "https://dmfexeter.sharepoint.com/sites/CoolmanTickets/Ticket%20PDFs/tickets%2002.20.20261.pdf",
+      "page_url": "/ticket-preview-tickets_02.20.20261_p008.png",
+      "preview_url": "/ticket-preview-tickets_02.20.20261_p008.png"
+    },
+    {
+      "account": "8133017",
       "customer": "Exeter Produce & Storage Co",
       "ticket_ref": "00000304349",
       "source_file": "Tickets 02.24.2026.pdf",
@@ -56254,23 +56271,6 @@
       "pdf_url": "https://dmfexeter.sharepoint.com/sites/CoolmanTickets/Ticket%20PDFs/Tickets%2003.17.2026.pdf",
       "page_url": "/ticket-preview-Tickets_03.17.2026_p001.png",
       "preview_url": "/ticket-preview-Tickets_03.17.2026_p001.png"
-    },
-    {
-      "account": "8133020",
-      "customer": "Exeter Produce & Storase Co",
-      "ticket_ref": "",
-      "source_file": "tickets 02.20.20261.pdf",
-      "page": "8",
-      "file_date": "2026-02-20",
-      "delivery_date": "2026-02-20",
-      "filename_date": "2026-02-20",
-      "search_date": "2026-02-20",
-      "litres": "523.8",
-      "fuel_type": "",
-      "delivery_address": "215 Thames Rd. W. | Exeter | DRIVE; ID: DP02",
-      "pdf_url": "https://dmfexeter.sharepoint.com/sites/CoolmanTickets/Ticket%20PDFs/tickets%2002.20.20261.pdf",
-      "page_url": "/ticket-preview-tickets_02.20.20261_p008.png",
-      "preview_url": "/ticket-preview-tickets_02.20.20261_p008.png"
     },
     {
       "account": "8133036",
