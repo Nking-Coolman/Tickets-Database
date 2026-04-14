@@ -615,6 +615,226 @@ body .ticket-portal .status {
 			.replace(/'/g, '&#39;');
 	}
 
+	function compactLower(value) {
+		return text(value)
+			.toLowerCase()
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function compactAlphaNum(value) {
+		return text(value)
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '');
+	}
+
+	function collapseDisplayText(value) {
+		return text(value)
+			.replace(/[“”]/g, '"')
+			.replace(/[‘’]/g, "'")
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function looksLikePhone(value) {
+		const raw = text(value);
+		const digits = digitsOnly(raw);
+		return digits.length === 10 && /[-().\s]/.test(raw);
+	}
+
+	function looksLikeSeparatorNoise(value) {
+		const raw = text(value);
+		if (!raw) {
+			return true;
+		}
+		return /^[\s\-_=.,:*\\/|•]+$/.test(raw);
+	}
+
+	function looksLikePostalFragment(value) {
+		const compact = text(value)
+			.toUpperCase()
+			.replace(/[^A-Z0-9]+/g, '');
+		return /^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(compact);
+	}
+
+	function looksLikeTinyNoise(value) {
+		const raw = collapseDisplayText(value);
+		if (!raw || raw === '-') {
+			return true;
+		}
+		const letters = raw.replace(/[^A-Za-z]/g, '');
+		const digits = digitsOnly(raw);
+		if (raw.length <= 2) {
+			return true;
+		}
+		if (letters.length <= 1 && digits.length <= 3) {
+			return true;
+		}
+		return false;
+	}
+
+	function looksLikeTicketRefEcho(value) {
+		return /^ticket ref\s*:?/i.test(compactLower(value));
+	}
+
+	function looksLikeDriverNoise(value) {
+		const compact = compactAlphaNum(value);
+		return compact.indexOf('riverid') !== -1 || compact.indexOf('driverio') !== -1 || compact.indexOf('riverio') !== -1;
+	}
+
+	function looksLikeTaglineNoise(value) {
+		const lower = compactLower(value);
+		return lower.indexOf('you need it most') !== -1
+			|| lower.indexOf('quality fuel products') !== -1
+			|| lower.indexOf('trusted partner') !== -1
+			|| lower.indexOf('total price') !== -1
+			|| lower.indexOf('prix total') !== -1;
+	}
+
+	function looksLikeHeaderNoise(value) {
+		const compact = compactAlphaNum(value);
+		return compact === 'wholesalemarketer'
+			|| compact === 'ofpetrocanada'
+			|| compact === 'coolmanfuels'
+			|| compact.indexOf('hst') === 0;
+	}
+
+	function looksLikeAddressAsCustomer(value) {
+		const raw = collapseDisplayText(value);
+		if (!raw || !/^\d/.test(raw)) {
+			return false;
+		}
+		return /\b(?:line|road|rd|hwy|highway|street|st|drive|dr|avenue|ave|blvd|boulevard)\b/i.test(raw);
+	}
+
+	function normalizeAddressSegment(value) {
+		return collapseDisplayText(value)
+			.replace(/\bC[\\/]0\b/ig, 'C/O')
+			.replace(/\bCIO\b/ig, 'C/O')
+			.replace(/\bCLO\b/ig, 'C/O');
+	}
+
+	function isNoiseAddressSegment(value) {
+		const raw = normalizeAddressSegment(value);
+		const lower = compactLower(raw);
+		if (!raw || raw === '-') {
+			return true;
+		}
+		if (looksLikeSeparatorNoise(raw) || looksLikeTinyNoise(raw) || looksLikePhone(raw)) {
+			return true;
+		}
+		if (looksLikeDriverNoise(raw) || looksLikeTicketRefEcho(raw) || looksLikeTaglineNoise(raw)) {
+			return true;
+		}
+		if (looksLikeHeaderNoise(raw)) {
+			return true;
+		}
+		if (lower === 'bill to' || lower === 'bill to:' || lower === 'partial drop' || lower === 'liv' || lower === 'livestock') {
+			return true;
+		}
+		if (lower === 'on' || lower === 'ontario' || looksLikePostalFragment(raw)) {
+			return true;
+		}
+		return false;
+	}
+
+	function cleanCustomerValue(value) {
+		const raw = collapseDisplayText(value);
+		if (!raw || raw === '-' || /^unknown$/i.test(raw)) {
+			return '';
+		}
+		if (looksLikeSeparatorNoise(raw) || looksLikeTinyNoise(raw) || looksLikePhone(raw)) {
+			return '';
+		}
+		if (looksLikeTicketRefEcho(raw) || looksLikeTaglineNoise(raw) || looksLikeHeaderNoise(raw)) {
+			return '';
+		}
+		if (/^account\s*:?\s*\d+$/i.test(raw) || /^bill to:?$/i.test(raw)) {
+			return '';
+		}
+		if (looksLikeAddressAsCustomer(raw)) {
+			return '';
+		}
+		return raw;
+	}
+
+	function cleanAddressValue(value) {
+		const raw = collapseDisplayText(value)
+			.replace(/={3,}/g, ' | ')
+			.replace(/-{5,}/g, ' | ')
+			.replace(/[•]+/g, ' | ');
+		if (!raw || raw === '-') {
+			return '';
+		}
+
+		const segments = raw
+			.split(/\s*\|\s*/)
+			.map(normalizeAddressSegment)
+			.filter(Boolean)
+			.filter((segment, index, allSegments) => allSegments.indexOf(segment) === index)
+			.filter((segment) => !isNoiseAddressSegment(segment));
+
+		const cleaned = (segments.length ? segments : [normalizeAddressSegment(raw)])
+			.filter((segment) => !isNoiseAddressSegment(segment))
+			.slice(0, 3)
+			.join(' | ');
+
+		if (!cleaned) {
+			return '';
+		}
+		if (cleaned.length > 96) {
+			return cleaned.slice(0, 93).trimEnd() + '...';
+		}
+		return cleaned;
+	}
+
+	function isValidIsoDate(value) {
+		const raw = text(value);
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+			return false;
+		}
+		const parts = raw.split('-').map((part) => Number(part));
+		const parsed = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+		return parsed.getUTCFullYear() === parts[0]
+			&& parsed.getUTCMonth() === parts[1] - 1
+			&& parsed.getUTCDate() === parts[2];
+	}
+
+	function bestTicketDate(record) {
+		const candidates = [record.search_date, record.delivery_date, record.file_date, record.filename_date];
+		for (let index = 0; index < candidates.length; index += 1) {
+			if (isValidIsoDate(candidates[index])) {
+				return candidates[index];
+			}
+		}
+		return '';
+	}
+
+	function cleanTicketRefValue(value) {
+		const raw = collapseDisplayText(value);
+		const digits = digitsOnly(raw);
+		if (!raw || raw === '-' || looksLikeTinyNoise(raw)) {
+			return '';
+		}
+		if (!digits || /^0+$/.test(digits) || digits.length < 4) {
+			return '';
+		}
+		return raw;
+	}
+
+	function rowHtml(label, value, isWide) {
+		const displayValue = text(value);
+		if (!displayValue) {
+			return '';
+		}
+		return [
+			'<div class="row' + (isWide ? ' row-wide' : '') + '">',
+			'<div class="k">' + escapeHtml(label) + '</div>',
+			'<div class="v">' + escapeHtml(displayValue) + '</div>',
+			'</div>'
+		].join('');
+	}
+
 	function parseQueryTerms(raw) {
 		return text(raw)
 			.split(/[;,\n]+/)
@@ -863,12 +1083,12 @@ body .ticket-portal .status {
 	}
 
 	function cardHtml(record) {
-		const customer = escapeHtml(record.customer || '-');
-		const account = escapeHtml(record.account || '-');
-		const ticketDate = escapeHtml(record.search_date || '-');
-		const ticketRef = escapeHtml(record.ticket_ref || '-');
-		const fileAndPage = escapeHtml(text(record.source_file) + ' / p.' + text(record.page));
-		const address = escapeHtml(record.delivery_address || '-');
+		const customer = cleanCustomerValue(record.customer);
+		const account = collapseDisplayText(record.account) || '-';
+		const ticketDate = bestTicketDate(record);
+		const ticketRef = cleanTicketRefValue(record.ticket_ref);
+		const fileAndPage = collapseDisplayText(text(record.source_file) + ' / p.' + text(record.page));
+		const address = cleanAddressValue(record.delivery_address);
 		const pageUrl = escapeHtml(text(record.page_url));
 		const previewUrl = escapeHtml(text(record.preview_url));
 		const previewAlt = escapeHtml(text(record.source_file) + ' page ' + text(record.page));
@@ -879,12 +1099,12 @@ body .ticket-portal .status {
 			'<article class="card">',
 			'<div class="preview">' + preview + '</div>',
 			'<div class="info">',
-			'<div class="row"><div class="k">Account</div><div class="v">' + account + '</div></div>',
-			'<div class="row row-wide"><div class="k">Customer</div><div class="v">' + customer + '</div></div>',
-			'<div class="row"><div class="k">Ticket Date</div><div class="v">' + ticketDate + '</div></div>',
-			'<div class="row"><div class="k">Ticket Ref</div><div class="v">' + ticketRef + '</div></div>',
-			'<div class="row row-wide"><div class="k">File / Page</div><div class="v">' + fileAndPage + '</div></div>',
-			'<div class="row row-wide"><div class="k">Address</div><div class="v">' + address + '</div></div>',
+			rowHtml('Account', account, false),
+			rowHtml('Customer', customer, true),
+			rowHtml('Ticket Date', ticketDate, false),
+			rowHtml('Ticket Ref', ticketRef, false),
+			rowHtml('File / Page', fileAndPage, true),
+			rowHtml('Address', address, true),
 			'<div class="actions">',
 			(pageUrl ? '<a class="primary" target="_blank" href="' + pageUrl + '">Open Preview</a>' : ''),
 			(pageUrl ? '<a target="_blank" href="' + pageUrl + '">Print Preview</a>' : ''),
